@@ -1,52 +1,46 @@
-from fastapi import FastAPI, HTTPException, Header
+# import package
+from fastapi import FastAPI, Request, Header, HTTPException
 
+# bikin object
 app = FastAPI()
 
-API_KEY = "phase0h8"
+API_KEY = "secret123" 
 
-data = {"name":"shopping cart",
-        "columns":["prod_name","price","num_items"],
-        "items":{}}
+# isi headers
+# - informasi metadata
+#   - format file harus berupa apa
+#   - ngasih tahu request/response berasal dari mana
+#   - ngasih tahu os yang dipakai oleh client apa
+# - untuk otentikasi
+#   - untuk melakukan request -> masukin username & password
+#   - untuk melakukan request -> harus menyertakan api key yang sesuai
+# - dll
 
-@app.get("/")
-def root():
-    return {"message":"Welcome to Toko H8 Shopping Cart! There are some features that you can explore",
-            "menu":{1:"See shopping cart (/data)",
-                    2:"Add item (/add) - You may need request",
-                    3:"Edit shopping cart (/edit/id)",
-                    4:"Delete item from shopping cart (/del/id)"}}
+# bikin endpoint / -> home
+@app.get('/')
+def getHome():
+    return {
+        "message": "hello world"
+    }
 
-@app.get("/cart")
-def show():
-    return data
-
-@app.post("/add")
-def add_item(added_item:dict, api_key: str = Header(None)):
+@app.get('/secret')
+def getSecret(api_key: str = Header(None)):
     if api_key is None or api_key != API_KEY:
-        raise HTTPException(status_code=401, detail="Invalid API Key. You are not allowed to add data!")
-    else:
-        id = len(data["items"].keys())+1
-        data["items"][id] = added_item
-        return f"Item successfully added into your cart with ID {id}"
+        raise HTTPException(status_code=401, detail="Invalid API Key")
 
-@app.put("/edit/{id}")
-def update_cart(id:int,updated_cart:dict, api_key: str = Header(None)):
-    if id not in data['items'].keys():
-        raise HTTPException(status_code=404, detail=f"Item with ID {id} not found")
-    else:
-        if api_key is None or api_key != API_KEY:
-            raise HTTPException(status_code=401, detail="Invalid API Key. You are not allowed to edit data!")
-        else:
-            data["items"][id].update(updated_cart)
-            return {"message": f"Item with ID {id} has been updated successfully."}
+    return {
+        "message": "this is top secret!!!"
+    }
 
-@app.delete("/del/{id}")
-def remove_row(id:int, api_key: str = Header(None)):
-    if id not in data['items'].keys():
-        raise HTTPException(status_code=404, detail=f"Item with ID {id} not found")
-    else:
-        if api_key is None or api_key != API_KEY:
-            raise HTTPException(status_code=401, detail="Invalid API Key. You are not allowed to delete data!")
-        else:
-            data["items"].pop(id)
-            return {"message": f"Item with ID {id} has been deleted successfully."}
+@app.get('/see-headers')
+def readHeader(request: Request):
+    # mengambil headers dari request
+    headers = request.headers
+
+    # informasi credential -> password, token, kunci enkripsi
+
+    return {
+        "message": "isi headers",
+        "headers": headers.get('User-Agent'),
+        "headers accept": headers.get('Accept')
+    }
